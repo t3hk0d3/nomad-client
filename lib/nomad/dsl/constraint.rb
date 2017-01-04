@@ -7,7 +7,7 @@ module Nomad
       dsl_attr 'Operator',  String, default: '=', key: 'Operand'
       dsl_attr 'Value',     String, required: true, key: 'RTarget'
 
-      def initalize(*args, &block)
+      def initialize(*args, &block)
         super(*parse_args(args), &block)
       end
 

@@ -8,8 +8,12 @@ module Nomad
 
     require_relative 'dsl/artifact'
     require_relative 'dsl/log_config'
+
+    require_relative 'dsl/network_port'
+    require_relative 'dsl/network'
     require_relative 'dsl/resources'
 
+    require_relative 'dsl/check'
     require_relative 'dsl/service'
 
     require_relative 'dsl/task'

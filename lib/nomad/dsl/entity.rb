@@ -13,7 +13,10 @@ module Nomad
         Hash[
           self.class.dsl_attrs.map do |name, options|
             unless @value.key?(name)
-              raise "Required attribute '#{name}' not set" if options[:required]
+              if options[:required]
+                raise "Required attribute '#{name}' not set for #{self}"
+              end
+
               next
             end
 
@@ -23,6 +26,10 @@ module Nomad
             [key, build_value(value, options)]
           end.compact
         ]
+      end
+
+      def to_s
+        "<#{self.class.name} #{@value.inspect}>"
       end
 
       private
@@ -90,7 +97,7 @@ module Nomad
       def normalize_hash(name, _options, _type, args)
         if args.size == 1 && args.first.is_a?(Hash)
           deep_stringify(args.first)
-        elsif args.size % 2 == 0
+        elsif (args.size % 2).zero?
           Hash[args.each_slice(2).to_a]
         else
           raise "Invalid arguments for attribute '#{name}'"
@@ -123,10 +130,7 @@ module Nomad
       def deep_stringify(hash, camelize_key = false)
         hash.each_with_object({}) do |(key, value), obj|
           key = key.to_s
-
-          if camelize_key
-            key = key.capitalize.gsub(/_[a-z]/) { |b| p b[1].upcase }
-          end
+          key = key.gsub(/(?:^|_)[a-z]/, &:upcase).tr('_', '') if camelize_key
 
           value = deep_stringify(value, camelize_key) if value.is_a?(Hash)
 
