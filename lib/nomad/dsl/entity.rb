@@ -59,6 +59,8 @@ module Nomad
           normalize_numeric(name, options, type, args)
         elsif type == :boolean
           normalize_boolean(name, options, type, args)
+        elsif type == :interval
+          normalize_interval(name, options, type, args)
         else
           normalize_common(name, options, type, args)
         end
@@ -107,6 +109,11 @@ module Nomad
           raise "Attribute '#{name}' should be boolean (true/false)"
         end
         value
+      end
+
+      def normalize_interval(_name, _options, _type, args)
+        # convert to nanoseconds
+        args.first.to_i * 1_000_000_000
       end
 
       def build_value(value, options = {})
