@@ -39,14 +39,14 @@ Nomad.job 'example' do
   constraint '${attr.kernel.name}', '=', 'linux'
 
   update do
-    stagger: 10 # seconds
-    max_parallel: 1
+    stagger 10 # seconds
+    max_parallel 1
   end
 
   periodic do
-    enabled: true
-    spec: "* * * * *"
-    spec_type: 'cron'
+    enabled true
+    spec "* * * * *"
+    spec_type 'cron'
     prohibit_overlap true
   end
 
