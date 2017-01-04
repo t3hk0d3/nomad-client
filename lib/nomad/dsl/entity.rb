@@ -4,7 +4,7 @@ module Nomad
   module DSL
     class Entity
       def initialize(value = {}, &block)
-        @value = value
+        @value = deep_stringify(value, true)
 
         instance_eval(&block) if block
       end
@@ -13,10 +13,7 @@ module Nomad
         Hash[
           self.class.dsl_attrs.map do |name, options|
             unless @value.key?(name)
-              if options[:required]
-                raise "Required attribute '#{name}' not set"
-              end
-
+              raise "Required attribute '#{name}' not set" if options[:required]
               next
             end
 
@@ -49,11 +46,8 @@ module Nomad
         type = options[:type]
 
         if type.is_a?(Class) && type < Nomad::DSL::Entity
-          value = type.new(*args, &block)
-          return value
-        end
-
-        if type == Hash
+          type.new(*args, &block)
+        elsif type == Hash
           normalize_hash(name, options, type, args)
         elsif type.is_a?(Class) && type < Numeric
           normalize_numeric(name, options, type, args)
@@ -95,7 +89,7 @@ module Nomad
 
       def normalize_hash(name, _options, _type, args)
         if args.size == 1 && args.first.is_a?(Hash)
-          args.first
+          deep_stringify(args.first)
         elsif args.size % 2 == 0
           Hash[args.each_slice(2).to_a]
         else
@@ -123,6 +117,20 @@ module Nomad
           value.map { |v| build_value(v) }
         else
           value
+        end
+      end
+
+      def deep_stringify(hash, camelize_key = false)
+        hash.each_with_object({}) do |(key, value), obj|
+          key = key.to_s
+
+          if camelize_key
+            key = key.capitalize.gsub(/_[a-z]/) { |b| p b[1].upcase }
+          end
+
+          value = deep_stringify(value, camelize_key) if value.is_a?(Hash)
+
+          obj[key] = value
         end
       end
 
